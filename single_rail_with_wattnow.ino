@@ -46,11 +46,11 @@ unsigned long lastWattHours = 0; // the last time we measured watt-hours
 #define onoff 1
 
 // Arduino pin for each output level
-const int numPins = 4; // Number of active Arduino Pins for + rail team.
-int pin[numPins] = {
+#define NUMPINS 4 // Number of active Arduino Pins for + rail team.
+int pin[NUMPINS] = {
   3, 5, 6, 9}; 
 
-#define numLevels numPins + 2
+#define numLevels NUMPINS + 2
 // voltages at which to turn on each level
 // voltage above the second to last level makes the last LEDs fastblink
 // voltage above the last level makes ALL the LEDs fastblink
@@ -66,20 +66,20 @@ int levelType[numLevels] = {
 // type of each level (pwm or onoff)
 
 // Arduino pins to be used as inputs to voltage sensor. This shows where to connect the wires! 
-const int voltPin = A0; // Voltage Sensor Input
-const int ampsPin = A3; // AC power and all DC devices. 
-const int relayPin=2;
-#define VOLTCOEFF 13.1944  // 304 / 23.04v
+#define VOLTPIN A0 // Voltage Sensor Input
+#define AMPSPIN A3 // AC power and all DC devices.
+#define RELAYPIN 2
+#define VOLTCOEFF 13.179 // correct value for new blue arbduino v2
 #define AMPCOEFF 8.0682 // 583 - 512 = 71; 71 / 8.8 amps = 8.0682
 #define AMPOFFSET 512 // when current sensor is at 0 amps this is the ADC value
 
 //MAXIMUM VOLTAGE TO GIVE LEDS
-//const float maxVoltLEDs = 24 -- always run LEDs in 24V series configuration.
-const float maxVoltLEDs = 10.0; //LED
-const float maxVolt = 27.4;
+//const float MAXVOLTLEDS = 24 -- always run LEDs in 24V series configuration.
+#define MAXVOLTLEDS 10.0 //LED
+#define MAXVOLT 27.4
 
 //Hysteresis variables
-const float ComeBackInVoltage = 26;
+#define COMEBACKINVOLTAGE 26.0
 int Hysteresis=0;
 
 // vars to store temp values
@@ -95,7 +95,7 @@ int ampsRaw;
 float Watts;
 float wattage;
 // on/off state of each level (for use in status output)
-int desiredState[numPins];
+int desiredState[NUMPINS];
 
 #define AVG_CYCLES 7 // average measured voltage over this many samples
 #define DISPLAY_INTERVAL_MS 1000 // when auto-display is on, display every this many milli-seconds
@@ -202,10 +202,10 @@ void setup() {
 
   Serial.println(versionStr);
 
-  pinMode(relayPin, OUTPUT);
+  pinMode(RELAYPIN, OUTPUT);
 
   // init LED pins
-  for(i = 0; i < numPins; i++) {
+  for(i = 0; i < NUMPINS; i++) {
     pinMode(pin[i],OUTPUT);
     if(levelType[i] == pwm)
       analogWrite(pin[i],0);
@@ -268,14 +268,14 @@ void loop() {
   }  
 
   //protect the ultracapacitors if needed
-  if (voltage > maxVolt){
-    digitalWrite(relayPin, HIGH); 
+  if (voltage > MAXVOLT){
+    digitalWrite(RELAYPIN, HIGH);
     Hysteresis=1;
   }
 
 
-  if (Hysteresis==1 && voltage < ComeBackInVoltage){
-    digitalWrite(relayPin, LOW);
+  if (Hysteresis==1 && voltage < COMEBACKINVOLTAGE){
+    digitalWrite(RELAYPIN, LOW);
     Hysteresis=0;
   } 
 
@@ -293,31 +293,31 @@ void loop() {
       if(voltage >= levelVolt[i]){
         senseLevel = i;
         if (i > 0) desiredState[0] = 0; // if second level, turn off first (red) lights
-        if (i < numPins) {  // if its an actual LED level
+        if (i < NUMPINS) {  // if its an actual LED level
           desiredState[i]=2; // turn lights solid on
         }
         else { // otherwise it's the overvoltage level so
-          desiredState[numPins-1] = 3; // set top LEDs to fastblink
-          if (i > numPins) { // relays must have failed shut!!!  freak out!
-            for (int ohshit = 0; ohshit < numPins; ohshit++) desiredState[ohshit] = 3;
+          desiredState[NUMPINS-1] = 3; // set top LEDs to fastblink
+          if (i > NUMPINS) { // relays must have failed shut!!!  freak out!
+            for (int ohshit = 0; ohshit < NUMPINS; ohshit++) desiredState[ohshit] = 3;
           } // we just had to set ALL LEDs to fastblink
         }
       } 
       else {
-        if (i < numPins) desiredState[i]=0;  // turn the level off
+        if (i < NUMPINS) desiredState[i]=0;  // turn the level off
       }
     }
   }
 //
-//  if (senseLevel == numPins+1){
-//    desiredState[numPins] = 3; // workaround to blink white lights
+//  if (senseLevel == NUMPINS+1){
+//    desiredState[NUMPINS] = 3; // workaround to blink white lights
 //  }
 
   // End setting desired states. 
   // Do the desired states. 
   // loop through each led and turn on/off or adjust PWM
 
-  for(i = 0; i < numPins; i++) {
+  for(i = 0; i < NUMPINS; i++) {
 
     if(levelType[i]==pwm) {
 
@@ -393,11 +393,11 @@ void setpwmvalue()
 
   int newVal = 0;
 
-  if (voltage <= maxVoltLEDs) {
+  if (voltage <= MAXVOLTLEDS) {
     newVal = 255.0;
   }
   else {
-    newVal = maxVoltLEDs / voltage * 255.0;
+    newVal = MAXVOLTLEDS / voltage * 255.0;
   }
 
   // if(voltage <= 24) {
@@ -415,9 +415,9 @@ void setpwmvalue()
 
 void getVoltages(){
 
-  voltage = average((analogRead(voltPin) / VOLTCOEFF), voltage); //Felt slow so I am putting in the line below with no averaging
+  voltage = average((analogRead(VOLTPIN) / VOLTCOEFF), voltage); //Felt slow so I am putting in the line below with no averaging
 
-  amps = (float) ((analogRead(ampsPin) - AMPOFFSET) / AMPCOEFF);
+  amps = (float) ((analogRead(AMPSPIN) - AMPOFFSET) / AMPCOEFF);
 }
 
 float average(float val, float avg){
@@ -430,12 +430,12 @@ void printDisplay(){
   Serial.print(" volts: ");
   Serial.print(voltage);
   Serial.print(" (");
-  Serial.print(analogRead(voltPin));
+  Serial.print(analogRead(VOLTPIN));
   if (Hysteresis) Serial.print(" PROTECTED ");
   Serial.print("), amps: ");
   Serial.print(amps);
   Serial.print(" (");
-  Serial.print(analogRead(ampsPin));
+  Serial.print(analogRead(AMPSPIN));
   Serial.print("), WattHours: ");
   Serial.print(wattHours);
   Serial.print(", WattAvg: ");
@@ -446,7 +446,7 @@ void printDisplay(){
   Serial.print(pwmValue);
 
   Serial.print(", LEDLEVEL:MODE ");
-  for(i = 0; i < numPins; i++) {
+  for(i = 0; i < NUMPINS; i++) {
     Serial.print(i);
     Serial.print(":");
     Serial.print(desiredState[i]);
