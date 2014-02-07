@@ -14,11 +14,12 @@
  * 1.9 -- added support for wattnow sign, changed serial rate to 9600 [jake]
  * 2.0 -- Brought over code from Pikes Peak that makes Minus Alert only display if Minus is involved. 
  * 2.1x -- modified for Fariche customer (no minusrail, single ampmeter/wattmeter) Arbduino board
+ * 2.2 -- now called single_rail_with_wattnow.ino (previously named / forked from Single_Rail_with_WattNow_Fariche.pde)
  */
 
 #define BAUDRATE 57600
 
-const char versionStr[] = "Pedal Power Utility Box ver. 2.1x . Single_Rail_with_WattNow_Fariche.pde";
+const char versionStr[] = "Pedal Power Utility Box ver. 2.2 . single_rail_with_wattnow.ino";
 
 #include <Wire.h>
 #include <avr/pgmspace.h>
