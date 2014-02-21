@@ -48,7 +48,7 @@ unsigned long lastWattHours = 0; // the last time we measured watt-hours
 // Arduino pin for each output level
 #define NUMPINS 4 // Number of active Arduino Pins for + rail team.
 int pin[NUMPINS] = {
-  3, 5, 6, 9}; 
+  3, 9, 10, 11};
 
 #define numLevels NUMPINS + 2
 // voltages at which to turn on each level
