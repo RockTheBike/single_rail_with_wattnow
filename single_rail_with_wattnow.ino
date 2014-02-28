@@ -195,7 +195,7 @@ char buffer[8][8];
 
 void setup() {
   Serial.begin(BAUDRATE);
-  // ht1632_initialize();
+  ht1632_initialize();
 
   // Initialize Software PWM
   //SoftPWMBegin();
@@ -235,7 +235,7 @@ void loop() {
   wattHours += wattAvg * ((float) (time - lastWattHours)/3600000);  // milliseconds to hours conversion
   lastWattHours = time;
 
-  // updateDisplay();  // update the ht1632c display
+  updateDisplay();  // update the ht1632c display
   setpwmvalue();
   readCount++;
   //First deal with the blink  
@@ -440,8 +440,8 @@ void printDisplay(){
   Serial.print(wattHours);
   Serial.print(", WattAvg: ");
   Serial.print(wattAvg);
-  //  Serial.print(", Wattage: ");
-  //  Serial.print(voltage * amps);
+  Serial.print(", Wattage: ");
+  Serial.print(voltage * amps);
   Serial.print(", pwm value: ");
   Serial.print(pwmValue);
 
