@@ -235,7 +235,11 @@ void loop() {
   wattHours += wattAvg * ((float) (time - lastWattHours)/3600000);  // milliseconds to hours conversion
   lastWattHours = time;
 
-  // updateDisplay();  // update the ht1632c display
+  if(time - timeDisplay > DISPLAY_INTERVAL_MS){
+    timeDisplay = time;
+    printDisplay(); // print stuff to serial port about everything
+    // updateDisplay();  // update the ht1632c display
+  }
   setpwmvalue();
   readCount++;
   //First deal with the blink  
@@ -349,16 +353,12 @@ void loop() {
 
 void updateDisplay() {
 
-  if(time - timeDisplay > DISPLAY_INTERVAL_MS){
-    timeDisplay = time;
-    displayCount += 1; //increment displayCount counter
-    if (displayCount > RESETINTERVAL) {
-      displayCount = 0;
-      ht1632_initialize();
-    }
-    printDisplay(); // print stuff to serial port about everything
-    readCount = 0;
+  displayCount += 1; //increment displayCount counter
+  if (displayCount > RESETINTERVAL) {
+    displayCount = 0;
+    ht1632_initialize();
   }
+  readCount = 0;
 
   char* label;
   if( time % (DISPLAYRATE * 2) > DISPLAYRATE ) {  // display wattage
