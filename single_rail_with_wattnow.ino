@@ -69,7 +69,7 @@ int levelType[numLevels] = {
 #define VOLTPIN A0 // Voltage Sensor Input
 #define AMPSPIN A3 // AC power and all DC devices.
 #define RELAYPIN 2
-#define VOLTCOEFF 13.179 // correct value for new blue arbduino v2
+#define VOLTCOEFF 13.579 // correct value for new blue arbduino v2
 #define AMPCOEFF 8.0682 // 583 - 512 = 71; 71 / 8.8 amps = 8.0682
 #define AMPOFFSET 512 // when current sensor is at 0 amps this is the ADC value
 
@@ -86,18 +86,21 @@ int Hysteresis=0;
 int adcvalue = 0;
 
 //Voltage related variables. 
+float voltsAdc = 0;
+float voltsAdcAvg = 0;
 float voltage = 0;
 
 //Current related variables
+float ampsAdc = 0;
+float ampsAdcAvg = 0;
 float amps=0;
-int ampsRaw;
 
 float Watts;
 float wattage;
 // on/off state of each level (for use in status output)
 int desiredState[NUMPINS];
 
-#define AVG_CYCLES 7 // average measured voltage over this many samples
+#define AVG_CYCLES 50 // average measured voltage over this many samples
 #define DISPLAY_INTERVAL_MS 1000 // when auto-display is on, display every this many milli-seconds
 #define RESETINTERVAL 60 // how many display intervals between display resets 
 int displayCount = 0;  // counts how many display intervals have happened
@@ -415,9 +418,15 @@ void setpwmvalue()
 
 void getVoltages(){
 
-  voltage = average((analogRead(VOLTPIN) / VOLTCOEFF), voltage); //Felt slow so I am putting in the line below with no averaging
+  // voltage = average((analogRead(VOLTPIN) / VOLTCOEFF), voltage);
+  voltsAdc = analogRead(VOLTPIN);
+  voltsAdcAvg = average(voltsAdc, voltsAdcAvg);
+  voltage = voltsAdcAvg / VOLTCOEFF;
 
-  amps = (float) ((analogRead(AMPSPIN) - AMPOFFSET) / AMPCOEFF);
+  // amps = (float) ((analogRead(AMPSPIN) - AMPOFFSET) / AMPCOEFF);
+  ampsAdc = analogRead(AMPSPIN) - AMPOFFSET;
+  ampsAdcAvg = average(ampsAdc, ampsAdcAvg);
+  amps = ampsAdcAvg / AMPCOEFF;
 }
 
 float average(float val, float avg){
@@ -430,12 +439,12 @@ void printDisplay(){
   Serial.print(" volts: ");
   Serial.print(voltage);
   Serial.print(" (");
-  Serial.print(analogRead(VOLTPIN));
+  Serial.print(voltsAdcAvg);
   if (Hysteresis) Serial.print(" PROTECTED ");
   Serial.print("), amps: ");
   Serial.print(amps);
   Serial.print(" (");
-  Serial.print(analogRead(AMPSPIN));
+  Serial.print(ampsAdcAvg);
   Serial.print("), WattHours: ");
   Serial.print(wattHours);
   Serial.print(", WattAvg: ");
